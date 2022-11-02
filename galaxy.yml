@@ -1,0 +1,13 @@
+namespace: bcoca
+name: misc
+version: 0.0.1
+authors:
+  - bcoca
+description: stuff
+license: GPLv3+
+tags:
+repository: https://github.com/bcoca/misc
+documentation: mebbe
+homepage: https://github.com/bcoca/misc
+issues: https://github.com/bcoca/misc/issues
+readme: lola.md

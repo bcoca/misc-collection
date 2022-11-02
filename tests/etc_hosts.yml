@@ -1,0 +1,3 @@
+plugin: bcoca.misc.etc_hosts
+inventory_name: first
+skip_localhost: false
