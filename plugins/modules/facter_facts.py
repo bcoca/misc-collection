@@ -19,17 +19,17 @@ options:
         elements: str
     fact_path:
         aliases: custom_dir
-        description: Custom
+        description: Custom dir to examine for custom facts
         type: path
     load_puppet:
-        description:
+        description: Load puppet classes for fact gathering
         type: bool
     load_ruby:
-        description:
+        description: Load ruby libraries, othewise only fact gathering coded in the binary will be used
         type: bool
         default: true
     legacy:
-        description:
+        description: Enable facter 'legacy' formated facts
         type: bool
 description:
     - Gatheres facts provided by the 'facter' utility
@@ -46,8 +46,7 @@ attributes:
     platform:
         platforms: posix
 requirements:
-      The 'facter' utility must be installed remote systems and support JSON output.
-    - The filter option filters only the first level subkey below ansible_facts.
+    - The 'facter' utility must be installed remote systems and support JSON output.
 author:
     - "Ansible Core Team"
 '''
@@ -142,7 +141,7 @@ def main():
             query=dict(required=False, type='list', elements='str', default=''),
             fact_path=dict(aliases=['custom_dir'], default='/etc/ansible/facts.d', required=False, type='path'),
             load_ruby=dict(required=False, type='bool', default=True),
-            load_puppet=dict(required=False, type='bool', default=False),
+            load_puppet=dict(required=False, type='bool'),
             legacy=dict(required=False, type='bool'),
         ),
         supports_check_mode=True,
