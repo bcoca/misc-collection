@@ -122,15 +122,18 @@ def get_facter_output(module):
     return out
 
 
-def collect(module, options):
+def collect(module):
 
     facter_dict = {}
     facter_output = get_facter_output(module)
 
-    try:
-        facter_dict = json.loads(facter_output)
-    except json.JSONDecodeError as e:
-        module.fail_json(msg=to_text(e))
+    if facter_output is not None:
+        try:
+            facter_dict = json.loads(facter_output)
+        except json.JSONDecodeError as e:
+            module.fail_json(msg=to_text(e))
+    else:
+        facter_dict = {'failed': 'no facter output available'}
 
     return facter_dict
 
@@ -153,7 +156,7 @@ def main():
     except Exception as e:
         module.fail_json(msg=to_text(e))
 
-    module.exit_json(facts)
+    module.exit_json(**facts)
 
 
 if __name__ == '__main__':
