@@ -157,7 +157,8 @@ def main():
         module.fail_json(msg=to_text(e))
 
     module.exit_json(**facts)
-
+import time
 
 if __name__ == '__main__':
+    time.sleep(10)
     main()
