@@ -92,10 +92,8 @@ class LookupModule(LookupBase):
             p = subprocess.Popen(shlex.join(command), cwd=self._loader.get_basedir(), shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
             (stdout, stderr) = p.communicate()
             if p.returncode == 0:
-                ret.append(stdout.decode("utf-8").rstrip())
+                ret.append(stdout.splitlines()[0].decode("utf-8").rstrip())
             else:
                 raise AnsibleError("The secret-tool CLI returned '%d' for '%s': %s" % (p.returncode, term, stderr))
-
-            ret.append(stdout.splitlines()[0].strip())
 
         return ret
