@@ -11,7 +11,6 @@ description:
 options:
     niceness:
         description: the value of 'nice' to be passed to executing a module
-        default: 0
         type: int
 extends_documentation_fragment:
   - shell_common
@@ -26,6 +25,6 @@ class ShellModule(Sh):
     def build_module_command(self, env_string, shebang, cmd, arg_path=None):
 
         nice = self.get_option('niceness')
-        if nice:
+        if nice is not None:
             cmd = f'nice -n {nice} {shlex.quote(cmd)}'
         return super().build_module_command(env_string, shebang, cmd, arg_path)
