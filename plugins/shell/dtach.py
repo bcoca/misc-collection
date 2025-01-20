@@ -11,6 +11,8 @@ description:
   - but cannot work  ...
 extends_documentation_fragment:
   - shell_common
+requirements:
+  - The C(dtach) CLI tool on the target
 """
 
 import os
