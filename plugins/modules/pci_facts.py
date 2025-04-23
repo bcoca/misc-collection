@@ -19,9 +19,8 @@ options:
         aliases: dns
     gather_timeout:
         description:
-            - Set the default timeout in seconds for fact gathering.
+            - Set the timeout in seconds for fact gathering.
         type: int
-        default: 10
         aliases: timeout
 description:
     - This module just dumps facts as produced by lscpi command
@@ -51,6 +50,10 @@ from ansible.module_utils.basic import AnsibleModule
 
 
 def main():
+
+    def _timeout(signum, frame):
+        module.fail_json(f'Timeout of {timeout!r} exceeded while running lscpi.')
+
     module = AnsibleModule(
         argument_spec=dict(
             gather_timeout=dict(default=10, required=False, type='int', aliases=['timeout']),
@@ -59,6 +62,7 @@ def main():
         supports_check_mode=True,
     )
 
+    timeout = module.params["gather_timeout"]
     try:
         lspci = module.get_bin_path('lspci')
     except ValueError as e:
@@ -70,10 +74,9 @@ def main():
     if module.params['use_dns']:
         command.append('-q')
 
-    def _timeout(signum, frame):
-        module.fail_json(f'Timeout of {module.params["gather_timeout"]!r} exceeded while running lscpi.')
     signal.signal(signal.SIGALRM, _timeout)
-    signal.alarm(module.params['gather_timeout'])
+    if timeout is not None:
+        signal.alarm(timeout)
 
     try:
         rc, pcidata, err = module.run_command(command)
