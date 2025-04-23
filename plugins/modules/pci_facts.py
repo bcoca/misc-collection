@@ -67,16 +67,21 @@ def main():
     if rc != 0:
         module.fail_json(f"Error when executing lspci: rc={rc!r} stderr={err!r}")
 
-    devices = []
+    devices = {}
     for record in pcidata.split("\n\n"):
         device = {}
+        current = None
         for entry in record.split('\n'):
-            if ':' not in entry:
+            if ':\t' not in entry:
                 continue  # skip blanks
-            k, v = entry.split(':\t')
-            device[k] = v
+            k, v = entry.split(':\t', 1)
+            if k == 'Device' and current is None:
+                current = v
+                devices[v] = {}
+            else:
+                device[k] = v
         if device:
-            devices.append(device)
+            devices[current] = device
 
     module.exit_json(result={'ansible_facts': {'pci': devices}})
 
