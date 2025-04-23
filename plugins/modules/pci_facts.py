@@ -78,7 +78,7 @@ def main():
     if module.params['use_dns']:
         command.append('-q')
 
-    signal(signal.SIGALRM, _timeout)
+    signal.signal(signal.SIGALRM, _timeout)
     signal.alarm(module.params['gather_timeout'])
     try:
         rc, pcidata, err = module.run_command(command)
