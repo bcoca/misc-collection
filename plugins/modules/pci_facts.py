@@ -50,24 +50,22 @@ def main():
         supports_check_mode=True,
     )
 
-    def _timeout(signum, frame):
-        module.exit_json('timeout exceeded while running lscpi')
 
     try:
         lspci = module.get_bin_path('lspci')
     except ValueError as e:
         module.fail_json(f"{e!r}")
 
-    o = signal.signal(signal.SIGALRM, _timeout)
     signal.alarm(module.params['gather_timeout'])
+    try:
+        rc, pcidata, err = module.run_command([lspci, '-vvvv', '-D', '-m', '-nn'])
+    except AlarmException:
+        module.fail_json('timeout exceeded while running lscpi')
+    finally:
+        signal.alarm(0)
 
-    # TODO: build in timeout to run_command
-    rc, pcidata, err = module.run_command([lspci, '-vvvv', '-D', '-m', '-nn'])
     if rc != 0:
         module.fail_json(f"Error when executing lspci: rc={rc!r} stderr={err!r}")
-
-    signal.alarm(0)
-    signal.signal(signal.SIGALRM, o)
 
     devices = []
     for record in pcidata.split("\n\n"):
