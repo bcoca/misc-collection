@@ -49,6 +49,15 @@ import signal
 
 from ansible.module_utils.basic import AnsibleModule
 
+
+class AlarmException(Exception):
+    pass
+
+
+def _timeout(signum, frame):
+    raise AlarmException(f'{signum!r} {frame!r}')
+
+
 def main():
     module = AnsibleModule(
         argument_spec=dict(
@@ -63,16 +72,18 @@ def main():
     except ValueError as e:
         module.fail_json(f"{e!r}")
 
+    # TODO: use -mm if all targets use newer lspci and switch to Slot for device id
     command = [lspci, '-vvvv', '-D', '-m', '-nn']
 
     if module.params['use_dns']:
         command.append('-q')
 
+    signal(signal.SIGALRM, _timeout)
     signal.alarm(module.params['gather_timeout'])
     try:
         rc, pcidata, err = module.run_command(command)
-    except AlarmException:
-        module.fail_json('timeout exceeded while running lscpi')
+    except AlarmException as e:
+        module.fail_json(f'Timeout of {module.params["gather_timeout"]!r} exceeded while running lscpi: {e!r}')
     finally:
         signal.alarm(0)
 
@@ -80,15 +91,15 @@ def main():
         module.fail_json(f"Error when executing lspci: rc={rc!r} stderr={err!r}")
 
     devices = {}
-    for record in pcidata.split("\n\n"):
+    for record in pcidata.split("\n\n"):  # break on empty lines (each device)
         device = {}
         current = None
         for entry in record.split('\n'):
             if ':\t' not in entry:
                 continue  # skip blanks
             k, v = entry.split(':\t', 1)
-            if k == 'Device' and current is None:
-                current = v
+            if k == 'Device' and current is None:  # first 'Device' is always the pci id
+                current = v  # domain:bus:device.func
                 devices[v] = {}
             else:
                 device[k] = v
