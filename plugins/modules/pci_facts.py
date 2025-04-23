@@ -10,6 +10,13 @@ module: pci_facts
 version_added: histerical
 short_description: Gathers PCI facts about remote hosts
 options:
+    use_dns:
+        description:
+            - Use DNS to get descriptions not available locally.
+            - This creates a local cache for lspci to reuse.
+        type: bool
+        default: false
+        aliases: dns
     gather_timeout:
         description:
             - Set the default timeout in seconds for fact gathering.
@@ -45,20 +52,25 @@ from ansible.module_utils.basic import AnsibleModule
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            gather_timeout=dict(default=10, required=False, type='int'),
+            gather_timeout=dict(default=10, required=False, type='int', aliases=['timeout']),
+            use_dns=dict(default=False, required=False, type='bool', aliases=['dns']),
         ),
         supports_check_mode=True,
     )
-
 
     try:
         lspci = module.get_bin_path('lspci')
     except ValueError as e:
         module.fail_json(f"{e!r}")
 
+    command = [lspci, '-vvvv', '-D', '-m', '-nn']
+
+    if module.params['use_dns']:
+        command.append('-q')
+
     signal.alarm(module.params['gather_timeout'])
     try:
-        rc, pcidata, err = module.run_command([lspci, '-vvvv', '-D', '-m', '-nn'])
+        rc, pcidata, err = module.run_command(command)
     except AlarmException:
         module.fail_json('timeout exceeded while running lscpi')
     finally:
