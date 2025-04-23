@@ -50,14 +50,6 @@ import signal
 from ansible.module_utils.basic import AnsibleModule
 
 
-class AlarmException(Exception):
-    pass
-
-
-def _timeout(signum, frame):
-    raise AlarmException(f'{signum!r} {frame!r}')
-
-
 def main():
     module = AnsibleModule(
         argument_spec=dict(
@@ -78,12 +70,13 @@ def main():
     if module.params['use_dns']:
         command.append('-q')
 
+    def _timeout(signum, frame):
+        module.fail_json(f'Timeout of {module.params["gather_timeout"]!r} exceeded while running lscpi.')
     signal.signal(signal.SIGALRM, _timeout)
     signal.alarm(module.params['gather_timeout'])
+
     try:
         rc, pcidata, err = module.run_command(command)
-    except AlarmException as e:
-        module.fail_json(f'Timeout of {module.params["gather_timeout"]!r} exceeded while running lscpi: {e!r}')
     finally:
         signal.alarm(0)
 
