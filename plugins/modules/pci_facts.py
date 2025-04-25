@@ -56,7 +56,7 @@ def main():
 
     module = AnsibleModule(
         argument_spec=dict(
-            gather_timeout=dict(default=10, required=False, type='int', aliases=['timeout']),
+            gather_timeout=dict(required=False, type='int', aliases=['timeout']),
             use_dns=dict(default=False, required=False, type='bool', aliases=['dns']),
         ),
         supports_check_mode=True,
