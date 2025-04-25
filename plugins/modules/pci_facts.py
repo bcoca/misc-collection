@@ -69,7 +69,7 @@ def main():
         module.fail_json(f"{e!r}")
 
     # TODO: use -mm if all targets use newer lspci and switch to Slot for device id
-    command = [lspci, '-vvvv', '-D', '-m', '-nn']
+    command = [lspci, '-vvvv', '-D', '-m', '-nn', '-k']
 
     if module.params['use_dns']:
         command.append('-q')
