@@ -1,0 +1,27 @@
+DOCUMENTATION:
+  name: drop
+  short_description: drop element from container
+  positional: _input, _drops
+  description: Iterate over several iterables in parallel, producing tuples with an item from each one.
+  notes:
+    - This is mostly a passthrough to Python's C(zip) function.
+  options:
+    _input:
+      description: Original object.
+      type: any
+      required: yes
+    _drops:
+      description: what to drop
+      type: any
+      required: yes
+
+EXAMPLES: |
+
+  # generates: { "a": 1, "c": 3 }
+  {{ {'a': 1, 'b': 2, 'c': 3} | drop('b')}}
+
+
+RETURN:
+  _value:
+    description: Original object sans what you wanted to drop
+    type: any
