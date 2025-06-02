@@ -5,43 +5,27 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-def allint(f):
-    """ Give unified int type error """
-    def wrapper(*args, **kwargs):
-        try:
-            return f(*args, **kwargs)
-        except TypeError as e:
-            raise TypeError(f"Expected int but got {type(a)!r}: {a!r}") from e
-    return wrapper
-
-
-@allint
-def do_band(a, b):
+def do_band(a: int, b: int):
     return a & b
 
 
-@allint
-def do_bor(a, b):
+def do_bor(a: int, b: int):
     return a | b
 
 
-@allint
-def do_bxor(a, b):
+def do_bxor(a: int, b: int):
     return a ^ b
 
 
-@allint
-def do_bnot(a):
+def do_bnot(a: int):
     return ~ a
 
 
-@allint
-def do_bleft(a, b):
+def do_bleft(a: int, b: int):
     return a << b
 
 
-@allint
-def do_bright(a, b):
+def do_bright(a: int, b: int):
     return a >> b
 
 
@@ -50,7 +34,6 @@ class FilterModule(object):
 
     def filters(self):
         return {
-            'band': do_band,
             'bAND': do_band,
             'bOR': do_bor,
             'bXOR': do_bxor,
