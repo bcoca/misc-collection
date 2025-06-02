@@ -50,6 +50,7 @@ class FilterModule(object):
 
     def filters(self):
         return {
+            'band': do_band,
             'bAND': do_band,
             'bOR': do_bor,
             'bXOR': do_bxor,
