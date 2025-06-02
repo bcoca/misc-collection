@@ -5,42 +5,26 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-def allint(f):
-    """ Give unified int type error """
-    def wrapper(*args, **kwargs):
-        try:
-            return f(*args, **kwargs)
-        except TypeError as e:
-            raise TypeError(f"Incorrect argument type, this filter only accepts ints.") from e
-    return wrapper
-
-
-@allint
 def do_band(a: int, b: int):
     return a & b
 
 
-@allint
 def do_bor(a: int, b: int):
     return a | b
 
 
-@allint
 def do_bxor(a: int, b: int):
     return a ^ b
 
 
-@allint
 def do_bnot(a: int):
     return ~ a
 
 
-@allint
 def do_bleft(a: int, b: int):
     return a << b
 
 
-@allint
 def do_bright(a: int, b: int):
     return a >> b
 
