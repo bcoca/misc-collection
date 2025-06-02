@@ -11,7 +11,7 @@ def allint(f):
         try:
             return f(*args, **kwargs)
         except TypeError as e:
-            raise TypeError("Expected int but got {type(a)!r}: {a!r}") from e
+            raise TypeError(f"Expected int but got {type(a)!r}: {a!r}") from e
     return wrapper
 
 
