@@ -31,8 +31,8 @@ def do_bxor(a, b):
 
 
 @allint
-def do_bnot(a, b):
-    return a ~ b
+def do_bnot(a):
+    return ~ a
 
 
 @allint
