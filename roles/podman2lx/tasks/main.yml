@@ -1,0 +1,53 @@
+- name: Ensure I have required data
+  assert:
+    that:
+      - podman_image is defined
+      - podman_image is string
+
+- name: Download image, run container so we can export tar and comporess it
+  collections:
+    - containers.podman
+  vars:
+    _outfile: "{{ podman_outfile |default(_temp_file['path']) }}.tar"
+    _container: "{{ podman_temporary_container | default('podman2lx') }}"
+  block:
+
+  - tempfile:
+    register: _temp_file
+    when: podman_outfile is undefined
+
+  - podman_image: 
+      state: present
+      name: '{{podman_image}}'
+  
+  - podman_container: 
+      name: '{{_container}}'
+      image: '{{podman_image}}'
+      state: started
+
+  - podman_container: 
+      name: '{{_container}}'
+      image: '{{podman_image}}'
+      state: stopped
+
+  - podman_export:
+      container: '{{_container}}'
+      dest: '{{_outfile}}'
+  
+  - command: gzip '{{_outfile}}'
+  
+  - podman_container: 
+      name: '{{_container}}'
+      image: '{{podman_image}}'
+      state: absent
+
+  - podman_image: 
+      state: absent
+      image: '{{podman_image}}'
+    when: podman_keep_image is defined and podman_keep_image
+  
+  
+  - debug: msg='Your container template is at {{_outfile}}.gz'
+
+
+# lxc-create {{name}} -t oci -- --url {{image}} # docker://alpine:latest
