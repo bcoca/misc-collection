@@ -1,0 +1,4 @@
+[kdeconnect]
+title=kdeconnect
+description=Allow communication with other clients using kdeconnect
+ports=1714:1764/udp|1714:1764/tcp
