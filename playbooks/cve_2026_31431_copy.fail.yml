@@ -1,0 +1,77 @@
+  # TODO: move to role, to integrate into patcher/security play
+- name: detect and mitigate cve-2026-31431
+  hosts: all
+  # Can use block with => when: ansible_facts['system'] == 'Linux',
+  # or can also be done via inventory or --limit
+  gather_facts: true
+  tasks:
+  # TODO: move to script
+  - name: Detect CVE-2026-31431
+    tags: detect
+    shell:
+      cmd: |-
+        import socket
+        import sys
+        AF_ALG = 38
+        try:
+            s = socket.socket(AF_ALG, socket.SOCK_SEQPACKET, 0)
+            s.bind(("aead", "gcm(aes)"))
+            print("AF_ALG AEAD is available")
+        except Exception as e:
+            sys.exit(0)
+        sys.exit(1)
+      executable: "{{ ansible_facts['python']['executable'] }}"
+    register: cve_2026_31431
+    ignore_errors: true
+    changed_when: false
+
+  - name: show results when needed
+    debug: msg={{cve_2026_31431}}
+    tags: detect
+    when: ansible_verbosity|int < 1
+
+  - name: start mitigation
+    tags: mitigate
+    when: cve_2026_31431 is failed
+    become: true
+    become_user: root
+    block:
+      - name: RH+, only tested on 2 vms, no derivatives
+        when: ansible_facts['os_family'] in ('RedHat',)
+        block:
+        - name: disable algif_aead module
+          shell:
+            cmd: "grubby --update-kernel=ALL --args='initcall_blacklist=algif_aead_init'"
+            executable: "/bin/bash"
+          when: ansible_facts['distribution_major_version']|int >= 9
+
+        - name: Call grub2-mkconfig
+          shell:
+            cmd: grub2-mkconfig -o /boot/grub2/grub.cfg
+            executable: "/bin/bash"
+          when: ansible_facts['distribution_major_version']|int < 9
+
+      - name: Openwrt (can be apk or opk, must have that defined in inventory)
+        package:
+          name: kmod-crypto-user
+          state: absent
+        when: ansible_facts['os_family'] in ('Openwrt',)
+
+      - name: Most distros, could try using modprobe module if detected, could also make this 'default' after all others run, only added my own/tested
+        when: ansible_facts['os_family'] in ('Debian', 'Archlinux', 'Alpine', 'Void', 'Gentoo')
+        block:
+          - name: disable loading of algif_aead module
+            copy:
+              content: "install algif_aead /bin/false"
+              dest:  "/etc/modprobe.d/disable-algif.conf"
+
+          - name: unload algif module (note could use modprobe module if installed)
+            shell:
+              cmd: rmmod algif_aead 2>/dev/null || true
+              executable: "/bin/bash"
+
+          - name: Make sure its not present at boot
+            shell: mkinitcpio -P
+            when: ansible_facts['os_family'] in ('Archlinux',)
+
+          # TODO: detect if we need to and run `update-initramfs -u` where appropos
