@@ -1,6 +1,8 @@
 // Author: Gary Guo @ RH
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+// TODO: expand to all AF_ALG calls, not just authentication as it can still be exploited 
+
 /* 
 # Requires clang, libbpf, kernel headers and bpf enabled kernel (bpf in /sys/kernel/security/lsm)
 clang -O2 -target bpf -c copyfail_mitigation.bpf.c -o copyfail_mitigation.bpf.o
