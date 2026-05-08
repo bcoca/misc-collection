@@ -60,15 +60,23 @@
       - name: Most distros, could try using modprobe module if detected, could also make this 'default' after all others run, only added my own/tested
         when: ansible_facts['os_family'] in ('Debian', 'Archlinux', 'Alpine', 'Void', 'Gentoo')
         block:
-          - name: disable loading of algif_aead module
+          - name: disable loading of bad modules
             copy:
-              content: "install algif_aead /bin/false"
-              dest:  "/etc/modprobe.d/disable-algif.conf"
+              content: "install {{item}} /bin/false"
+              dest:  "/etc/modprobe.d/disable-{{item}}.conf"
+            loop:
+              - algif_aead
+              - esp4
+              - esp5
 
-          - name: unload algif module (note could use modprobe module if installed)
+          - name: unload bad modules (note could use modprobe module if installed)
             shell:
-              cmd: rmmod algif_aead 2>/dev/null || true
+              cmd: rmmod '{{item}}' 2>/dev/null || true
               executable: "/bin/bash"
+            loop:
+              - algif_aead
+              - esp4
+              - esp5
 
           - name: Make sure its not present at boot
             shell: mkinitcpio -P
